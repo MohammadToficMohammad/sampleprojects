@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Security;
+using System.Threading.Tasks;
+
+namespace NioStream.Pipe
+{
+    public  interface  CommonStream
+    {
+     
+        public  IAsyncResult BeginReadCommon(byte[] buffer, int offset, int count, AsyncCallback asyncCallback, object asyncState);
+
+       // public  void WriteCommon(byte[] buffer,Object StartTlsLock);
+
+        public   bool CanWriteCommon();
+
+        public  void CloseCommon();
+
+        public int EndReadCommon(IAsyncResult ar);
+        
+    }
+}

@@ -1,0 +1,630 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NioStream.Abstracts;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using static NioStream.Pipe.TcpProtocolInitStarter;
+
+namespace NioStream.Pipe
+{
+
+    public class ClientContainer
+    {
+
+
+        public CommonStream stream;
+        public CommonStream TlsStream;
+        public CommonStream TcpStream;
+        public Socket socket;
+        public int type = 0;//0 tcp ,1 ssl
+        public string host;
+        public DateTime lastRead=DateTime.UtcNow;
+
+
+
+     
+        public bool isTlsAuth = false;
+
+
+        public Object StartTlsLock=new Object();
+        public SemaphoreSlim StartTlsLockSemaphoreSlim = new SemaphoreSlim(1);
+
+        public volatile ConcurrentDictionary<string, Object> PropsFlags = new ConcurrentDictionary<string, Object>();
+        //public bool closed = false;
+
+        public TcpProtocolInitStarter _TCPProtocolInitStarter;
+
+        public ProtocolContext protocolContext;
+
+        public void StartTls()
+        {
+            lock (StartTlsLock)
+            {
+                 // ((NetworkStream)stream).Flush();
+                 stream = TlsStream;
+                ((SslStream)stream).AuthenticateAsServer(protocolContext.TlsCert, clientCertificateRequired: false, protocolContext.SslProtocol, checkCertificateRevocation: false);
+            }
+
+        }
+        public void SendToClient(byte[] bytes)
+        {
+            lock (StartTlsLock)
+            {
+                if (stream.Equals(TcpStream))
+                {
+                    var strm = (NetworkStream)stream;
+                    strm.Write(bytes, 0, bytes.Length);
+                    strm.Flush();
+                }
+                else
+                if (stream.Equals(TlsStream))
+                {
+                    var strm = (SslStream)stream;
+                    strm.Write(bytes);
+                    strm.Flush();
+                }
+            }
+        }
+            public void SendToClientAsync(byte[] bytes)
+        {
+            
+            Task.Run(async ()=> {
+               
+                await StartTlsLockSemaphoreSlim.WaitAsync();
+                try
+                {
+                    if (stream.Equals(TcpStream))
+                    {
+                        var strm = (NetworkStream)stream;
+                        await strm.WriteAsync(bytes,0, bytes.Length);
+                        await strm.FlushAsync();
+                    }
+                    else
+                    if (stream.Equals(TlsStream))
+                    {
+                        var strm = (SslStream)stream;
+                        await strm.WriteAsync(bytes, 0, bytes.Length);
+                        await strm.FlushAsync();
+                    }
+                }
+                finally
+                {
+                    StartTlsLockSemaphoreSlim.Release();
+                }
+            
+
+                /*
+                lock (StartTlsLock)
+                {
+                    if (stream.Equals(TcpStream))
+                    {
+                        var strm = (NetworkStream)stream;
+                        strm.Write(bytes,0, bytes.Length);
+                        strm.Flush();
+                    }
+                    else
+                    if (stream.Equals(TlsStream))
+                    {
+                        var strm = (SslStream)stream;
+                        strm.Write(bytes);
+                        strm.Flush();
+                    }
+                }
+                */
+
+            });
+           
+        }
+
+
+        /*
+        public void SendToClient(byte[] bytes) 
+        {
+            lock (StartTlsLock) 
+            {
+                if (stream.Equals(TcpStream))
+                {
+                    var strm = (NetworkStream)stream;
+                    strm.Write(bytes);
+                    strm.Flush();
+                } else 
+                if (stream.Equals(TlsStream)) 
+                {
+                    var strm = (SslStream)stream;
+                    strm.Write(bytes);
+                    strm.Flush();
+                }
+            }
+        }
+        */
+
+    }
+
+
+    public class TcpProtocolInitStarter : BackgroundService
+    {
+     
+
+        //TODO you can add OnSendCallBack
+        public delegate void onAcceptDelegate(ClientContainer cnt);
+        public delegate void onCloseDelegate(ClientContainer cnt);
+        public AbstractHandler PipelineHead;
+
+        public event onAcceptDelegate onAccept;
+        public event onCloseDelegate onClose;
+
+   
+
+        public delegate void beforeNextReadDelegate(ProtocolContext pCtx, MessageContext msgCtx);
+        public event beforeNextReadDelegate onBeforeNextRead;
+
+
+        public delegate void beforeAcceptDelegate(Socket listener);
+        public event beforeAcceptDelegate onBeforeAccept;
+
+        public delegate void beforeNextAcceptDelegate(Socket listener);
+        public event beforeNextAcceptDelegate onBeforeNextAccept;
+
+        public delegate void justAcceptDelegate(Socket listener, Socket lastclient);
+        public event justAcceptDelegate onJustAccept;
+
+
+        public ILogger _logger;
+
+        public ProtocolContext protocolContext;
+
+     
+
+        public readonly List<TaskContainer> _AsyncWorkers = new List<TaskContainer>();
+
+
+        public Task removePresistentContext;
+        public volatile bool removePresistentContextCancelationToken = false;
+
+        public readonly IConfiguration _Configuration;
+
+        //TLS
+        public X509Certificate2 TlsCert;
+        public bool isTlsImplicit=false;
+        public System.Security.Authentication.SslProtocols SslProtocol = System.Security.Authentication.SslProtocols.Default;
+
+
+
+        public ManualResetEvent allDone = new ManualResetEvent(false);
+
+
+        protected virtual void onJustAcceptEvent(Socket listener, Socket lastclient)
+        {
+
+        }
+        protected virtual void onBeforeNextAcceptEvent(Socket listener)
+        {
+
+        }
+
+
+        protected virtual void onBeforeNextReadEvent(ProtocolContext pCtx, MessageContext msgCtx)
+        {
+
+        }
+
+        protected virtual void onBeforeAcceptEvent(Socket listener)
+        {
+
+        }
+
+        protected virtual void onAcceptEvent(ClientContainer cnt)
+        {
+
+        }
+
+        protected virtual void onCloseEvent(ClientContainer cnt)
+        {
+
+        }
+
+       
+        public TcpProtocolInitStarter(ILogger logger, IConfiguration Configuration, ProtocolContext ctx)
+        {
+            onJustAccept += onJustAcceptEvent;
+            onBeforeNextAccept += onBeforeNextAcceptEvent;
+            onBeforeAccept += onBeforeAcceptEvent;
+            onBeforeNextRead +=onBeforeNextReadEvent;
+            onAccept += onAcceptEvent;
+            onClose += onCloseEvent;
+
+            _logger = logger;
+            _Configuration = Configuration;
+       
+            protocolContext = ctx;
+
+            TlsCert = ctx.TlsCert;
+            isTlsImplicit = ctx.isTlsImplicit;
+            SslProtocol = ctx.SslProtocol;
+
+        protocolContext._TCPProtocolInitStarter = this;
+             /*
+            Task.Run(() =>
+            {
+               
+                while (true)
+                {
+                    lock (ClientsMapLock)
+                    {
+                        foreach (var map in ClientsMap.ToList())
+                        {
+
+                            if (!map.Value.closed && !map.Value.socket.IsConnected())
+                            {
+                              //  var host = ((IPEndPoint)map.Value.socket.RemoteEndPoint).ToString();
+                                _logger.LogError($" Client Disconnected {map.Key}");
+                                map.Value.closed = true;
+                                onClose.Invoke(map.Value);
+                                // socket.Shutdown(SocketShutdown.Both);
+                                
+                                map.Value.stream.CloseCommon();
+                                map.Value.socket.Close();
+                                //ClientsMap.TryRemove(host,out var junk);
+                            }
+                        }
+                     
+                    }
+                    Task.Delay(TimeSpan.FromMilliseconds(10000)).Wait();
+                }
+            });
+            */
+
+          
+
+
+
+        }
+
+        void ExecuteAsyncThreadMethod()
+        {
+            Task.Run(()=> {
+            Socket listener = new Socket(AddressFamily.InterNetwork,
+         SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                listener.Bind(protocolContext.localEndPoint);
+                listener.Listen(1000);
+                //  listener.NoDelay = true;
+                //   listener.ReceiveTimeout = 100;
+               // Task.Run(() =>
+              //  {
+
+                    //   while (true)
+                    //   {
+                    try
+                    {
+                        Object state = new Object[] { listener };
+                        listener.BeginAccept(NewAcceptCallback, state);
+
+
+                        // var socket = listener.Accept();
+                        // AcceptCallback(socket);
+                    }
+                    catch (Exception ee)
+                    {
+                        _logger.LogError($"Error while Accpeting socket {ee}");
+
+                    }
+
+                    //      }
+
+
+              //  });
+
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error while binding socket {e}");
+            }
+                ;
+            });
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            Thread t = new Thread(new ThreadStart(ExecuteAsyncThreadMethod));
+            t.Start();
+
+            return Task.CompletedTask;
+        }
+
+        private void NewAcceptCallback(IAsyncResult ar)
+        {
+            Object[] statearr = (Object[])ar.AsyncState;
+            Socket listener = (Socket)statearr[0];
+
+            
+            Task.Run( ()=> 
+            {
+                try
+                {
+                    onBeforeAccept.Invoke(listener);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Error on onBeforeAccept {e}");
+                };
+                Socket socket = null;
+                try
+                {
+                    socket = listener.EndAccept(out var acceptBuffer, ar);
+
+
+                    //can be used for ddos
+                    try
+                    {
+                        onJustAccept.Invoke(listener, socket);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Error on onJustAccept {e}");
+                    };
+
+
+                    AcceptCallback(socket);
+
+
+
+                }
+                catch (Exception een) { _logger.LogInformation($"error on EndAccept {een}"); }
+
+
+                ;
+            });
+
+            //can be used for throttle
+            try
+            {
+                onBeforeNextAccept.Invoke(listener);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error on onBeforeNextAccept {e}");
+            };
+
+
+            Object state = new Object[] { listener };
+            listener.BeginAccept(NewAcceptCallback, state);
+
+        }
+
+
+
+
+        public void AcceptCallback(Socket socket)
+        {
+
+             //  socket.NoDelay = true;
+             //   socket.ReceiveTimeout = 100;
+
+            var host = ((IPEndPoint)socket.RemoteEndPoint).ToString();
+
+                var Cnt = new ClientContainer();
+                
+                Cnt.socket = socket;
+                Cnt.host=host;
+
+
+               // Cnt.closed = false;
+                Cnt._TCPProtocolInitStarter = this;
+                Cnt.protocolContext = protocolContext;
+                Cnt.socket.ReceiveTimeout = 500;
+                Cnt.socket.SendTimeout = 500;
+                Cnt.TcpStream = new NetworkStreamCommon(socket);
+                Cnt.TlsStream = new SslStreamCommon((Stream)Cnt.TcpStream);
+                if (isTlsImplicit)
+                {
+                    Cnt.type = 1;
+                    Cnt.stream = Cnt.TlsStream;
+                    _logger.LogInformation($"NIO 102 {Cnt.stream}");
+                    Cnt.isTlsAuth = false;
+
+                }
+                else
+                {
+                    Cnt.type = 0;
+                    Cnt.stream = Cnt.TcpStream;
+                    _logger.LogInformation($"NIO 100 {Cnt.stream}");
+                }
+
+
+
+
+
+
+
+            
+
+
+            _logger.LogInformation($"NIO 11 {Cnt.stream}");
+
+
+            if (isTlsImplicit) 
+            {
+                Cnt.isTlsAuth = false; ;
+                try
+                {
+                    
+                    ((SslStream)Cnt.stream).AuthenticateAsServer(TlsCert, clientCertificateRequired: false, SslProtocol,checkCertificateRevocation: false);
+                }
+                catch (Exception etls)
+                {
+
+                    onClose.Invoke(Cnt);
+                    Cnt.stream.CloseCommon();
+                    Cnt.socket.Close();Cnt = null;
+                    _logger.LogInformation($"TLS failed for {Cnt.host}");
+                    return;
+
+                }
+                Cnt.isTlsAuth = true;
+
+            }
+
+           
+
+
+          
+             try
+             {
+                 onAccept.Invoke(Cnt);
+             }
+             catch (Exception e)
+             {
+                 _logger.LogError($"Error on AcceptHandler {e}");
+             };
+         
+
+
+
+            StateObject stateObj = new StateObject();
+            stateObj.workSocket = socket;
+            Object state = new Object[] { socket, stateObj, Cnt};
+            _logger.LogInformation($"NIO 2 {Cnt.stream}");
+            Cnt.stream.BeginReadCommon(stateObj.buffer, 0, StateObject.BufferSize, 
+              new AsyncCallback(ReceiveCallback), state);
+
+
+            // StateObject state = new StateObject();
+            //state.workSocket = socket;
+            //socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+             // new AsyncCallback(ReceiveCallback), state);
+
+
+        }
+        private void ReceiveCallback(IAsyncResult ar)
+        {
+            // _logger.LogInformation(" start of  ReceiveCallback ");
+            Object[] statearr = (Object[])ar.AsyncState;
+            Socket socket =(Socket)statearr[0];
+            StateObject state =(StateObject)statearr[1];
+            ClientContainer cnt = (ClientContainer)statearr[2];
+            Task.Run(() =>
+            {
+                try
+                {
+                    int bytesRead = cnt.stream.EndReadCommon(ar);
+                    if (bytesRead > 0)
+                    {
+                        cnt.lastRead = DateTime.UtcNow;
+                        var buf = state.buffer.GetSegment(0, bytesRead).ToArray();
+
+                       
+
+                            //ThreadPool.QueueUserWorkItem(ReadThreadProcessNio, new Object[] { buf as Object, cnt as Object });
+                            ReadThreadProcessNio(new Object[] { buf as Object, cnt as Object });
+
+                            Object state2 = new Object[] { socket, state, cnt };
+
+                            try
+                            {
+                            var messageCtx = new MessageContext();
+                            messageCtx.bytes = buf;
+                            messageCtx.clientContainer = (ClientContainer)cnt;
+                            messageCtx.ClientIP = ((IPEndPoint)messageCtx.clientContainer.socket.RemoteEndPoint).Address.ToString();
+                            messageCtx.ClientPort = ((IPEndPoint)messageCtx.clientContainer.socket.RemoteEndPoint).Port.ToString();
+                            onBeforeNextRead?.Invoke(cnt.protocolContext,messageCtx);
+                            }
+                            catch (Exception et)
+                            {
+                                _logger.LogError($"Error on beforeNextRead {et}");
+                            }
+
+                            cnt.stream.BeginReadCommon(state.buffer, 0, StateObject.BufferSize,
+                             new AsyncCallback(ReceiveCallback), state2);
+                        
+                       
+                       
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"TCP client  closed  {cnt.host}");
+                        try
+                        {
+                            onClose.Invoke(cnt);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError($"Error on closinghandler {e}");
+                        }
+                        finally {
+                            cnt.stream.CloseCommon();
+                            cnt.socket.Close(); cnt = null;
+
+                        };
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogInformation($"TCP client  closed  {cnt.host} {e}");
+
+                    try
+                    {
+                        onClose.Invoke(cnt);
+                    }
+                    catch (Exception ee)
+                    {
+                        _logger.LogError($"Error on closinghandler {ee}");
+                    }
+                    finally
+                    {
+                        cnt.stream.CloseCommon();
+                        cnt.socket.Close(); cnt = null;
+                    };
+
+
+
+                }
+
+            });
+            //_logger.LogInformation(" end of  ReceiveCallback ");
+        }
+        public void ReadThreadProcessNio(Object state)
+        {
+            var stateArr = (Object[])state;
+            var buffer = (byte[])stateArr[0];
+            var messageCtx = new MessageContext();
+            messageCtx.bytes = buffer;
+            messageCtx.clientContainer =(ClientContainer) stateArr[1];
+            messageCtx.ClientIP = ((IPEndPoint)messageCtx.clientContainer.socket.RemoteEndPoint).Address.ToString();
+            messageCtx.ClientPort = ((IPEndPoint)messageCtx.clientContainer.socket.RemoteEndPoint).Port.ToString();
+            PipelineHead.NextHandle(protocolContext, messageCtx);
+        }
+      
+
+    }
+
+    public class StateObject
+    {
+        // Size of receive buffer.  
+        public const int BufferSize = 1024;
+
+        // Receive buffer.  
+        public byte[] buffer = new byte[BufferSize];
+
+        // Received data string.
+        public StringBuilder sb = new StringBuilder();
+
+        // Client socket.
+        public Socket workSocket = null;
+    }
+}

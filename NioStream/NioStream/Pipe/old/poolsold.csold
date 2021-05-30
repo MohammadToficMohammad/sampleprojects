@@ -1,0 +1,76 @@
+﻿ /*
+        public class NioPool<T> 
+        {
+            private NioItem<T>[] Pool;
+            private readonly int PoolSize;
+            public NioPool(int _PoolSize)
+            {
+                PoolSize = _PoolSize;
+                Pool = new NioItem<T>[PoolSize];
+                for (int i = 0; i < PoolSize;i++) 
+                {
+                    Pool[i] = new NioItem<T>(i);
+                }
+            }
+
+
+            public NioItem<T> Rent()
+            {
+                for (int i = 0; i < PoolSize; i++)
+                {
+                    if (!Pool[i].Rented)
+                    {
+                        lock (Pool[i])
+                        {
+                            Pool[i].Rented = true;
+                            return Pool[i];
+                        }
+                    }
+                }
+                throw new Exception("all pool rented");
+            }
+
+
+            public NioItem<T> Rent() 
+            {
+                for (int i = 0; i < PoolSize; i++)
+                {
+                    if (!Pool[i].Rented) 
+                    {
+                        lock (Pool[i]) 
+                        {
+                            if (!Pool[i].Rented)
+                            { 
+                            Pool[i].Rented = true;
+                            return Pool[i];
+                            }
+                        }
+                    }
+                }
+                throw new Exception("all pool rented");
+            }
+
+            public void  Return(NioItem<T> item)
+            {
+                        lock (Pool[item.Index])
+                        {
+                          Pool[item.Index].Rented = false;
+                        }
+            }
+
+
+        }
+        public class NioItem<T>
+        {
+            internal readonly int Index;
+            public T Value;
+            internal volatile bool Rented = false;
+            public NioItem(int _Index)
+            {
+                Index = _Index;
+                //Value = new MessageContext();
+                Value = Activator.CreateInstance<T>();
+            }
+        }
+
+        */

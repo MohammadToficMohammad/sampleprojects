@@ -1,0 +1,4 @@
+﻿needs this Microsoft.EntityFrameworkCore.Tools
+
+add-migration MigrationName --context DotNetCoreCqrs.Data.DbContexts.StoreContext -o Data\Migrations
+update-database //

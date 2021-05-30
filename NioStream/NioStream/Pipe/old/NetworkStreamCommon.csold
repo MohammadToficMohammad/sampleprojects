@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+namespace NioStream.Pipe
+{
+    public class NetworkStreamCommon :NetworkStream,CommonStream
+    {
+        public NetworkStreamCommon(Socket socket) :base(socket)
+        {
+           
+        }
+
+        public IAsyncResult BeginReadCommon(byte[] buffer, int offset, int count, AsyncCallback asyncCallback, object asyncState)
+        {
+            return base.BeginRead( buffer,  offset,  count,  asyncCallback, asyncState);
+        }
+
+        public bool CanWriteCommon()
+        {
+            return base.CanWrite;
+        }
+
+        public void CloseCommon()
+        {
+            base.Close();
+        }
+
+        public int EndReadCommon(IAsyncResult ar)
+        {
+            return base.EndRead(ar);
+        }
+
+        
+    }
+}

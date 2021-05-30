@@ -1,0 +1,5 @@
+  INSERT INTO CAR (CAR_ID,COLOR, MODEL) VALUES
+  (1,'BLACK', 'BMW'), --or 0 
+  (2,'BLUE', 'VOLVO'); --or 1 
+  
+  --we have to update last index also

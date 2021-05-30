@@ -1,0 +1,6 @@
+for zipkin check pom and props
+we can add tags by injecting the tracer then:
+
+Span span = this.tracer.currentSpan();
+		span.tag("orderName", orderCreateDTO.name);
+		span.tag("orderPrice", Integer.toString(orderCreateDTO.price));

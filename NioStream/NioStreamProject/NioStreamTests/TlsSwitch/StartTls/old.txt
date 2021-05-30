@@ -1,0 +1,50 @@
+﻿using Microsoft.Extensions.Logging;
+using NioStream.Abstracts;
+using NioStream.Pipe;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NioStream.Protocols.TESTS.TlsSwitch
+{
+    public class TlsTailHandler : Pipe.AbstractHandler
+    {
+
+        public TlsTailHandler(ILogger _logger, ProtocolContext prCtx) : base(_logger, prCtx)
+        {
+
+        }
+
+        public override object NextHandle(ProtocolContext prCtx, MessageContext msgCtx)
+        {
+            
+            _logger.LogInformation("TlsTailHandler recv");
+            return null;
+        }
+        protected override void onBeforeNextReadEvent(ProtocolContext pCtx, MessageContext msgCtx)
+        {
+
+            if (doStartTlsCall(msgCtx.bytes))
+            {
+
+                var ackBytes = Encoding.UTF8.GetBytes("ACK");
+                msgCtx.bytes = ackBytes;
+               // base.PreviousHandle(msgCtx.clientContainer.protocolContext, msgCtx);
+                msgCtx.clientContainer.StartTls();
+                _logger.LogInformation("TlsTailHandler recv TLS start");
+
+            }
+
+        }
+
+
+        public bool doStartTlsCall(byte[] bytes)
+        {
+            var str = Encoding.UTF8.GetString(bytes).Trim();
+            return (str.Equals("SSLSTART"));
+        }
+    }
+}
+

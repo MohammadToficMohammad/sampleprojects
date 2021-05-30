@@ -1,0 +1,177 @@
+﻿udp newest
+
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NioStream.Abstracts;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace NioStream.Pipe
+{
+    public class UdpProtocolInitStarter : BackgroundService
+    {
+
+        public AbstractHandler PipelineHead;
+        public ILogger _logger; 
+        public ProtocolContext protocolContext;
+        public readonly List<TaskContainer> _AsyncWorkers = new List<TaskContainer>();
+        public Task removePresistentContext;
+        public volatile bool removePresistentContextCancelationToken = false;
+        public readonly IConfiguration _Configuration;
+
+
+        public delegate void BeforeUDPNextReadDelegate(byte[] buffer,Socket socket);
+        public BeforeUDPNextReadDelegate beforeNextRead;
+
+        public delegate void BeforeUDPFirstReadDelegate();
+        public BeforeUDPFirstReadDelegate beforeFirstRead;
+
+
+
+        public UdpProtocolInitStarter(ILogger logger, IConfiguration Configuration,ProtocolContext ctx) 
+        {
+            _logger = logger;
+            _Configuration = Configuration;
+
+            protocolContext = ctx;
+
+        }
+
+        void ExecuteAsyncThreadMethod()
+        {
+            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            try
+            {
+                listener.Bind(protocolContext.localUdpEndPoint);
+                // listener.NoDelay = true;
+                // listener.ReceiveTimeout = 100;
+                Task.Run(() => {
+                    try
+                    {
+                        EndPoint endpoint = new IPEndPoint(IPAddress.Any, 0); ;
+                        var flags = SocketFlags.None;
+                        StateObject state = new StateObject();
+                        state.workSocket = listener;
+                        try
+                        {
+                            beforeFirstRead?.Invoke();
+                        }
+                        catch (Exception et)
+                        {
+                            _logger.LogError($"Error on UDP beforeFirstRead {et}");
+                        }
+                        listener.BeginReceiveMessageFrom(state.buffer, 0, state.buffer.Length, flags, ref endpoint, new AsyncCallback(ReceiveCallback), state);
+                    }
+                    catch (Exception ee)
+                    {
+                        _logger.LogError($"Error while first udp starting {ee.ToString()}");
+                    }
+                });
+
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error while first udp starting {e.ToString()}");
+            }
+
+
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            Thread t = new Thread(new ThreadStart(ExecuteAsyncThreadMethod));
+            t.Start();
+            return Task.CompletedTask;
+        }
+
+
+        private void ReceiveCallback(IAsyncResult ar)
+        {
+            //_logger.LogInformation(" start of  ReceiveCallback ");
+            StateObject state = (StateObject)ar.AsyncState;
+            Socket client = state.workSocket;
+            Task.Run(() => {
+                try
+                {
+                    var flags = SocketFlags.None;
+                    EndPoint endpoint = new IPEndPoint(IPAddress.Any, 0); ;
+                    int bytesRead = client.EndReceiveMessageFrom(ar,ref flags,ref endpoint, out var info);
+                    if (bytesRead > 0)
+                    {  
+                        var bufArr = state.buffer.GetSegment(0, bytesRead).ToArray();
+                        ThreadPool.QueueUserWorkItem(ReadThreadProcess, new object[] { bufArr as Object, client as Object, endpoint as Object });
+
+                        try
+                        {
+                            beforeNextRead?.Invoke(bufArr, client);
+                        }
+                        catch (Exception et)
+                        {
+                            _logger.LogError($"Error on UDP beforeFirstRead {et}");
+                        }
+
+                        client.BeginReceiveMessageFrom(state.buffer, 0, state.buffer.Length, flags, ref endpoint, new AsyncCallback(ReceiveCallback), state);
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"udp  closed  {client.RemoteEndPoint}");
+                        client.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"udp  closed  {e.ToString()} {client.RemoteEndPoint}");
+                    client.Close();
+                   
+                }
+
+            });
+           // _logger.LogInformation(" end of  ReceiveCallback ");
+        }
+
+        public void ReadThreadProcess(object state)
+        {
+            try
+            {
+                var stateArr = (object[])state;
+                var buf = (byte[])stateArr[0];
+                var socket = (Socket)stateArr[1];
+                var endPoint = (IPEndPoint)stateArr[2];
+                var bufTrimed = buf.TrimEnd();
+                var messageCtx = new MessageContext();
+                messageCtx.bytes = bufTrimed;
+                messageCtx.UDP = true;
+                messageCtx.UdpSocket = socket;
+                messageCtx.UDPRempteEndPoint = endPoint;
+
+
+                PipelineHead.NextHandle(protocolContext, messageCtx);
+
+            }
+            catch (Exception ee)
+            {
+                _logger.LogError($"Error while reading message {ee.ToString()} ");
+            }
+
+        }
+
+
+
+
+
+    }
+
+
+}

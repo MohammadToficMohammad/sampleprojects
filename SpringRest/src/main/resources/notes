@@ -1,0 +1,46 @@
+/*
+ * //we put index over columns which could be searched alot together
+ * 
+ * @Table(indexes = { @Index(name = "owner_model_index", columnList =
+ * "OWNER_ID, MODEL"), // @Index(name = "owner_index", columnList = "OWNER_ID"),
+ * no need because the // compound index A,B will support A // @Index(name =
+ * "owner_index", columnList = "OWNER_ID", unique = true), })
+ * 
+ * @Column // @Convert(converter = CarModelsJpaConverter.class) // use it when
+ * we need to // store models as string in db //@Enumerated(EnumType.ORDINAL)
+ * CARMODELS model; //@Enumerated(EnumType.String) CARMODELS model;//or we can
+ * use this way private CarModel model;
+ * 
+ * @Column // @JsonSerialize(using = CarColorJsonSerializer.class) //use it when
+ * we need // custom json serialization also we can add @JsonDeserialize private
+ * String color;
+ */
+
+/*
+
+
+olds 
+@Transactional 
+	public Optional<Owner> getOwnerIncludeCarsById2(long id) {
+	    var owner = ownerRepository.findById(id);
+	    // lazy fetch the cars
+	    owner.setCars(new ArrayList<>(owner.getCars())); deep copy the cars because cars will not be accessed outside the Transaction 
+		return owner;
+	}
+*/
+
+
+/* olds 
+ * 
+ * getOwnerIncludeCarsById(long id) { var owner =
+ * ownerRepository.findByIdAndFetchCarsEagerly(id); return Optional.of(owner); }
+ * 
+ * 
+ * 
+ * @Transactional public Optional<Owner>
+ * getOwnerIncludeCarsByIdWithout(long id) { var owner =
+ * ownerRepository.findById(id).get(); // to overcome lazy ,but cars will not be
+ * persistent outside this method owner.setCars(new
+ * ArrayList<>(owner.getCars())); entityManager.detach(owner); return
+ * Optional.of(owner); }
+ */

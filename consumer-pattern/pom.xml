@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
+	<artifactId>consumer-pattern</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>consumer-pattern</name>
+	<description>consumer-pattern</description>
+
+
+	<modules>
+		<module>gatewayService</module>
+		<module>consumerService</module>
+		<module>businessManager</module>
+		<module>businessManagerRpcClient</module>
+		<module>MqEventsClientAbstractsCp</module>
+		<module>MqEventsServerAbstractsCp</module>
+		<module>coreEvents</module>
+		<module>RpcAbstractsCp</module>
+		<module>RpcClientAbstractsCp</module>
+	</modules>
+
+</project>

@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Security;
+using System.Threading.Tasks;
+
+namespace NioStream.Pipe
+{
+    public class SslStreamCommon :SslStream,CommonStream
+    {
+        public SslStreamCommon(Stream stream) : base(stream) 
+        {
+        
+        }
+
+        public IAsyncResult BeginReadCommon(byte[] buffer, int offset, int count, AsyncCallback asyncCallback, object asyncState)
+        {
+            return base.BeginRead( buffer,  offset, count,  asyncCallback,  asyncState);
+        }
+
+        public bool CanWriteCommon()
+        {
+            return base.CanWrite;
+        }
+
+        public void CloseCommon()
+        {
+            var stream = base.InnerStream;
+            base.Close();
+            stream.Close();
+        }
+
+        public int  EndReadCommon(IAsyncResult ar)
+        {
+           return  base.EndRead(ar);
+        }
+
+        
+    }
+}

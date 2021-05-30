@@ -1,0 +1,15 @@
+
+**/target
+**/mvn/wrapper/maven-wrapper.jar
+**/src/main/**/target
+**/src/test/**/target
+**/obj
+**/bin
+**/debug
+
+
+**/obj
+**/bin
+**/.vs
+**/Debug
+
