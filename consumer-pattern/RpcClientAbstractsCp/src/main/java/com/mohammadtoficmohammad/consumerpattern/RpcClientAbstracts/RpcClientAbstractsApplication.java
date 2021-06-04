@@ -1,19 +1,15 @@
-package com.mohammadtoficmohammad.consumerpattern.MqEventsClientAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.RpcClientAbstracts;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
-
-
 @SpringBootApplication
-public class MqClientAbstractsApplication {
+public class RpcClientAbstractsApplication {
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(MqClientAbstractsApplication.class)
-		  .web(WebApplicationType.NONE)
-		  .run(args);
+		new SpringApplicationBuilder(RpcClientAbstractsApplication.class).web(WebApplicationType.NONE).run(args);
 	}
 
 }

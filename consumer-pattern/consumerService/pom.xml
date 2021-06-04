@@ -44,7 +44,7 @@
 
 		<dependency>
 			<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
-			<artifactId>MqEventsClientAbstractsCp</artifactId>
+			<artifactId>MqEventsClientAbstracts</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

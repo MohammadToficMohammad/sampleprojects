@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
-	<artifactId>RpcAbstractsCp</artifactId>
+	<artifactId>RpcServerAbstracts</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>RpcAbstractsCp</name>
-	<description>RpcAbstractsCp</description>
+	<name>RpcServerAbstracts</name>
+	<description>RpcServerAbstracts</description>
 
 	<properties>
 		<java.version>11</java.version>

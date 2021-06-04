@@ -3,8 +3,10 @@ package com.mohammadtoficmohammad.consumerpattern.businessManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import com.mohammadtoficmohammad.consumerpattern.RpcAbstractsCp.IRpcHandler;
-import com.mohammadtoficmohammad.consumerpattern.RpcAbstractsCp.ServiceNameServerBean;
+import com.mohammadtoficmohammad.consumerpattern.RpcServerAbstracts.IRpcHandler;
+import com.mohammadtoficmohammad.consumerpattern.RpcServerAbstracts.ServiceNameServerBean;
+import com.mohammadtoficmohammad.consumerpattern.businessManagerRpcClient.IbusinessManager;
+
 import com.mohammadtoficmohammad.consumerpattern.businessManagerRpcClient.IbusinessManager;
 
 @Service

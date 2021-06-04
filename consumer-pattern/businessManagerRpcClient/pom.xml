@@ -31,7 +31,7 @@
 		
 		<dependency>
 			<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
-			<artifactId>RpcClientAbstractsCp</artifactId>
+			<artifactId>RpcClientAbstracts</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		

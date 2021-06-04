@@ -7,13 +7,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"com.mohammadtoficmohammad.consumerpattern.**"})
+@ComponentScan({ "com.mohammadtoficmohammad.consumerpattern.**" })
 public class ConsumerServiceApplication {
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(ConsumerServiceApplication.class)
-		  .web(WebApplicationType.NONE)
-		  .run(args);
+		new SpringApplicationBuilder(ConsumerServiceApplication.class).web(WebApplicationType.NONE).run(args);
 	}
 
 }

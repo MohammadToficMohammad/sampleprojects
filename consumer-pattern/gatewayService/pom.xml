@@ -19,10 +19,7 @@
 		<spring-cloud.version>2020.0.0-RC1</spring-cloud.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -51,7 +48,7 @@
 
 		<dependency>
 			<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
-			<artifactId>MqEventsServerAbstractsCp</artifactId>
+			<artifactId>MqEventsServerAbstracts</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

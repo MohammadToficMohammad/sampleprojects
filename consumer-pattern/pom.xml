@@ -15,11 +15,11 @@
 		<module>consumerService</module>
 		<module>businessManager</module>
 		<module>businessManagerRpcClient</module>
-		<module>MqEventsClientAbstractsCp</module>
-		<module>MqEventsServerAbstractsCp</module>
+		<module>MqEventsClientAbstracts</module>
+		<module>MqEventsServerAbstracts</module>
 		<module>coreEvents</module>
-		<module>RpcAbstractsCp</module>
-		<module>RpcClientAbstractsCp</module>
+		<module>RpcServerAbstracts</module>
+		<module>RpcClientAbstracts</module>
 	</modules>
 
 </project>

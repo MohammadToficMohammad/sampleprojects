@@ -1,4 +1,4 @@
-package com.mohammadtoficmohammad.consumerpattern.MqEventsServerAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.MqEventsServerAbstracts;
 
 import java.util.List;
 
@@ -12,21 +12,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class MqEventSender {
-	
+
 	@Autowired
 	@Order(1)
 	MqServiceNameServerBean serviceName;
-	
-	@Autowired
-    private RabbitTemplate template;
-	
-	public void send(EventSenderDto eventDto) {
-		String event=eventDto.GetJson();
-        template.convertAndSend(serviceName.name + ".MqFanoutExchange", "", event);
-        System.out.println(" [x] Sent '" + event + "'");
-    }
 
-	
+	@Autowired
+	private RabbitTemplate template;
+
+	public void send(EventSenderDto eventDto) {
+		String event = eventDto.GetJson();
+		template.convertAndSend(serviceName.name + ".MqFanoutExchange", "", event);
+		System.out.println(" [x] Sent '" + event + "'");
+	}
+
 	public static class EventSenderDto {
 
 		public String eventName;

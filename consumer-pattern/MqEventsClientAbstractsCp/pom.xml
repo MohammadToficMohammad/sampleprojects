@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mohammadtoficmohammad.consumer-pattern</groupId>
-	<artifactId>MqEventsClientAbstractsCp</artifactId>
+	<artifactId>MqEventsClientAbstracts</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>MqEventsClientAbstractsCp</name>
-	<description>MqEventsClientAbstractsCp</description>
+	<name>MqEventsClientAbstracts</name>
+	<description>MqEventsClientAbstracts</description>
 
 	<properties>
 		<java.version>11</java.version>

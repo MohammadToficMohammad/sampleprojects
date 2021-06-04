@@ -1,4 +1,4 @@
-package com.mohammadtoficmohammad.consumerpattern.MqEventsClientAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.MqEventsClientAbstracts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,16 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-
 public class MqClientEventsToSubscribe {
-	
+
 	public static List<String> EventsToSubscribe = new ArrayList<String>();
-	
-	public MqClientEventsToSubscribe(List<String> _EventsToSubscribe) 
-	{
-		EventsToSubscribe=_EventsToSubscribe;
+
+	public MqClientEventsToSubscribe(List<String> _EventsToSubscribe) {
+		EventsToSubscribe = _EventsToSubscribe;
 	}
-	
-	
-    
+
 }

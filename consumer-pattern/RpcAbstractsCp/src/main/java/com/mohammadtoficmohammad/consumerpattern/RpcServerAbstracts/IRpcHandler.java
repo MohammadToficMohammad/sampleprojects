@@ -1,4 +1,4 @@
-package com.mohammadtoficmohammad.consumerpattern.RpcAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.RpcServerAbstracts;
 
 import org.springframework.stereotype.Component;
 

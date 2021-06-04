@@ -1,4 +1,4 @@
-package com.mohammadtoficmohammad.consumerpattern.MqEventsClientAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.MqEventsClientAbstracts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,23 +24,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class MqClientAbstract {
 
-	
-	//public Function<EventClientDto, Object> eventHandler;
-	
+	// public Function<EventClientDto, Object> eventHandler;
+
 	@Order(1)
 	@Bean
-    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
+	public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+		return new RabbitAdmin(connectionFactory);
+	}
 
 	@Order(1)
 	@Autowired
 	public RabbitAdmin _RabbitAdmin;
-	
+
 	@Order(1)
 	@Autowired
 	public MqServiceNameClientBean serviceName;
-	
+
 	@Order(1)
 	@Autowired
 	public MqClientEventsToSubscribe mqClientEventsToSubscribe;
@@ -53,71 +52,57 @@ public abstract class MqClientAbstract {
 	@Autowired
 	private RabbitTemplate template;
 
-	
 	/*
-	@Order(1)
-	@Bean
-	public Queue getEventQueue() {
-		// return new AnonymousQueue(); this on scale will make all instances get the
-		// event
-		return new Queue(serviceName.name + ".mqevents");// this on scale will make only one of instances to get the
-															// event
-	}
-	*/
-	
-	
-	
-	
+	 * @Order(1)
+	 * 
+	 * @Bean public Queue getEventQueue() { // return new AnonymousQueue(); this on
+	 * scale will make all instances get the // event return new
+	 * Queue(serviceName.name + ".mqevents");// this on scale will make only one of
+	 * instances to get the // event }
+	 */
+
 	@Order(2)
 	@Bean
 	public void bindQueues() {
-		var queue=new Queue(serviceName.name + ".mqevents");
+		var queue = new Queue(serviceName.name + ".mqevents");
 		_RabbitAdmin.declareQueue(queue);
-		
-		for(var qu : mqClientEventsToSubscribe.EventsToSubscribe) 
-		{
-			FanoutExchange fanout=new FanoutExchange(qu+".MqFanoutExchange");
+
+		for (var qu : mqClientEventsToSubscribe.EventsToSubscribe) {
+			FanoutExchange fanout = new FanoutExchange(qu + ".MqFanoutExchange");
 			_RabbitAdmin.declareExchange(fanout);
 			_RabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(fanout));
 		}
 	}
-	
-	
-	
+
 	/*
-	@Order(2)
-	@Bean
-	public void declareQueues() {
-		var list=Arrays.asList(mqClientQueueName.buildFor(""));
-		for(var qu : list) 
-		{
-			_RabbitAdmin.declareQueue( new Queue(qu));
-		}
-	}
-	*/
+	 * @Order(2)
+	 * 
+	 * @Bean public void declareQueues() { var
+	 * list=Arrays.asList(mqClientQueueName.buildFor("")); for(var qu : list) {
+	 * _RabbitAdmin.declareQueue( new Queue(qu)); } }
+	 */
 	@Order(1)
 	@Bean
 	public void test() {
-	//	System.out.println("Here");
-	//	System.out.println(mqClientQueueName.buildFor(""));
+		// System.out.println("Here");
+		// System.out.println(mqClientQueueName.buildFor(""));
 	}
+
 	@Order(5)
 	@RabbitListener(queues = "#{mqClientQueueName.buildFor(\"\")}")
 	public void mqReceive(String eventJson) throws InterruptedException {
-System.out.println("Event Recieved: " +eventJson);
-		var eventDto=new EventClientDto(eventJson);
-		//eventHandler.apply(eventDto);
+		System.out.println("Event Recieved: " + eventJson);
+		var eventDto = new EventClientDto(eventJson);
+		// eventHandler.apply(eventDto);
 		handleEvent(eventDto);
-		
+
 	}
-	
+
 	public Object handleEvent(EventClientDto event) {
-		
-		
+
 		return event;
-		
+
 	}
-	
 
 	public static class EventClientDto {
 

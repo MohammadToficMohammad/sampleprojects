@@ -1,4 +1,5 @@
-package com.mohammadtoficmohammad.consumerpattern.MqEventsServerAbstractsCp;
+package com.mohammadtoficmohammad.consumerpattern.MqEventsServerAbstracts;
+
 import java.util.Arrays;
 import java.util.List;
 
