@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import com.mohammadtoficmohammad.consumerpattern.MqEventsServerAbstracts.MqServiceNameServerBean;
 
 @Component
-public class MqEventsServerInit {
+public class MqEventsServerConfig {
 	@Bean
 	public MqServiceNameServerBean getMqServiceNameServerBean() {
 		return new MqServiceNameServerBean("gatewayService");

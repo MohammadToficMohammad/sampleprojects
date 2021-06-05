@@ -2,16 +2,20 @@ package com.mohammadtoficmohammad.consumerpattern.businessManagerRpcClient;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import com.mohammadtoficmohammad.consumerpattern.RpcClientAbstracts.RpcClientAbstract;
 
 @Primary
-@Service
+//@Service
 public class BusinessManagerRpcClient extends RpcClientAbstract implements IbusinessManager {
 
-	public BusinessManagerRpcClient() {
+	public BusinessManagerRpcClient(String localKey) {
+		ServiceName = "businessManager" + localKey;
+	}
 
+	public BusinessManagerRpcClient() {
 		ServiceName = "businessManager";
 	}
 

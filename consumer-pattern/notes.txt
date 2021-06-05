@@ -4,3 +4,15 @@ we can add tags by injecting the tracer then:
 Span span = this.tracer.currentSpan();
 		span.tag("orderName", orderCreateDTO.name);
 		span.tag("orderPrice", Integer.toString(orderCreateDTO.price));
+		
+		
+		for  local testing switch to local services:
+		1-choose random localkey
+		rpc:
+		   on server set the localkey to the name bean ServiceNameServerBean like ServiceNameServerBean("businessManager","localKey");
+		   on client pass the localkey to the client bean
+		   
+		MqEvent
+		   on server set localkey  to the name bean    MqServiceNameServerBean
+		   on client if the client local set localkey  the name bean MqServiceNameClientBean
+		   on client if the server is local add localkey to the end of name of the needed subscription  MqClientEventsToSubscribe(Arrays.asList("gatewayServiceMqLocalKey"))
