@@ -14,5 +14,5 @@ Span span = this.tracer.currentSpan();
 		   
 		MqEvent
 		   on server set localkey  to the name bean    MqServiceNameServerBean
-		   on client if the client local set localkey  the name bean MqServiceNameClientBean
+		   on client if the client local set localkey to  the name bean MqServiceNameClientBean
 		   on client if the server is local add localkey to the end of name of the needed subscription  MqClientEventsToSubscribe(Arrays.asList("gatewayServiceMqLocalKey"))
