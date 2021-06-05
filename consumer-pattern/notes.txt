@@ -9,10 +9,11 @@ Span span = this.tracer.currentSpan();
 		for  local testing switch to local services:
 		1-choose random localkey
 		rpc:
-		   on server set the localkey to the name bean ServiceNameServerBean like ServiceNameServerBean("businessManager","localKey");
-		   on client pass the localkey to the client bean
+		   on server if server is local set the localkey to the name bean ServiceNameServerBean like ServiceNameServerBean("businessManager","localKey");
+		   on client if client is local no action needed for this.
+		   on client if server is local  pass the localkey to the rpcclient bean
 		   
 		MqEvent
-		   on server set localkey  to the name bean    MqServiceNameServerBean
-		   on client if the client local set localkey to  the name bean MqServiceNameClientBean
-		   on client if the server is local add localkey to the end of name of the needed subscription  MqClientEventsToSubscribe(Arrays.asList("gatewayServiceMqLocalKey"))
+		   on server if server is local set localkey  to the name bean    MqServiceNameServerBean
+		   on client if the client is local pass localkey to  the name bean MqServiceNameClientBean
+		   on client if the server is local add localkey to the end of name of the needed subscription MqClientEventsToSubscribe(Arrays.asList("gatewayServiceMqLocalKey"))
