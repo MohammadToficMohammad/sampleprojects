@@ -6,7 +6,7 @@ These are some sample projects:
 Spring Boot rest-api project with repository ,service and rest-controller layers
 
 ## Consumer Pattern
-This is multi-Module spring-Boot project , it's an implementation to consumer pattern based on rabbitmq (AQMP framework) events and rpc calls
+This is multi-Module spring-Boot project , it's an implementation to consumer pattern based on rabbitmq  events and rpc calls
 
 ## .Net Core Cqrs
 This is Asp.NetCore project with rest api controller with simplified implementation of CQRS pattern.
