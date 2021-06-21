@@ -6,40 +6,78 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mohammadtoficmohammad.springrest.Models.Dto.CarDto;
+import com.mohammadtoficmohammad.springrest.Models.Dto.CarListDto;
+import com.mohammadtoficmohammad.springrest.Models.Dto.OwnerDto;
 import com.mohammadtoficmohammad.springrest.Models.Entity.Car;
-import com.mohammadtoficmohammad.springrest.Models.Vo.CarVo;
 import com.mohammadtoficmohammad.springrest.Repository.CarRepository;
 import com.mohammadtoficmohammad.springrest.Service.Interface.ICarService;
 
 @Service
 public class CarService implements ICarService {
-	
+
 	@Autowired
 	CarRepository carRepository;
-	
-	
-	public Car saveCar(Car car) 
-	{
-		carRepository.save(car);
-		return car;
-	}
-	
-	public Car saveCar(CarVo carVo) 
-	{
-		var car=new Car();
-		car.setColor(carVo.color);
-		car.setModel(carVo.model);
-		carRepository.save(car);
-		return car;
+
+	@Override
+	public CarDto saveCar(Car car) {
+
+		var result = new CarDto();
+		if (car == null) {
+			result.success = false;
+			result.message = "Null car not accepted";
+			return result;
+		}
+		
+		try {
+
+			var carResult=carRepository.save(car);
+			result=CarDto.build(carResult);
+			result.success = true;
+			result.message = "car saved";
+			return result;
+
+		} catch (Exception e) {
+			result.success = false;
+			result.message = "error happened";
+			return result;
+		}
+
 	}
 
-	public Optional<Car> getCarById(long id) 
-	{
-		return carRepository.findById(id);
+	@Override
+	public CarDto getCarById(long carId) {
+
+		var result = new CarDto();
+
+		try {
+			var car = carRepository.findById(carId);
+
+			if (car.isEmpty()) {
+				result.success = false;
+				result.message = "no such car id exits";
+				return result;
+			}
+
+			result = CarDto.build(car.get());
+			result.success = true;
+			result.message = "car exists";
+			return result;
+
+		} catch (Exception e) {
+			result.success = false;
+			result.message = "error happened";
+			return result;
+		}
 	}
-	
-	public List<Car> getAllCars() 
-	{
-		return carRepository.findAll();
+
+	@Override
+	public CarListDto getAllCars() {
+
+		var result = CarListDto.build(carRepository.findAll());
+		result.success = true;
+		result.message = "all existing cars";
+		return result;
 	}
+
 }

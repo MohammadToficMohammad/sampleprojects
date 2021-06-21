@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import com.mohammadtoficmohammad.springrest.Models.Entity.CarModel;
+import com.mohammadtoficmohammad.springrest.Models.Dto.OwnerDto;
 import com.mohammadtoficmohammad.springrest.Models.Entity.Car;
 import com.mohammadtoficmohammad.springrest.Models.Entity.Owner;
 import com.mohammadtoficmohammad.springrest.Service.Implementation.CarService;
@@ -54,14 +55,15 @@ public class Initializer implements ApplicationRunner {
 		owner.cars.add(car1);
 		owner.cars.add(car2);
 		//cascade all will persist the cars
-		owner=ownerService.saveOwner(owner);
+		var result=ownerService.saveOwner(owner);
+
 		
 		
-		var opOwner=ownerService.getOwnerIncludeCarsById(owner.getOwnerId()).get();
-		System.out.println(opOwner.cars.size());
-		for(var o :opOwner.cars) 
+		
+		var ownerDto=ownerService.getOwnerIncludeCarsById(result.getOwnerId());
+		System.out.println(ownerDto.carListDto.carDtos.size());
+		for(var o :ownerDto.carListDto.carDtos) 
 		{
-			
 			System.out.println(o.getColor());
 		}
 		

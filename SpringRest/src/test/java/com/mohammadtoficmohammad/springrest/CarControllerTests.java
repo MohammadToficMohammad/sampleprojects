@@ -16,17 +16,18 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.mohammadtoficmohammad.springrest.Controllers.CarController;
+import com.mohammadtoficmohammad.springrest.Controllers.CarsController;
 import com.mohammadtoficmohammad.springrest.Models.Entity.CarModel;
 import com.mohammadtoficmohammad.springrest.Service.Implementation.CarService;
 import com.mohammadtoficmohammad.springrest.Service.Interface.ICarService;
+import com.mohammadtoficmohammad.springrest.Models.Dto.CarDto;
 import com.mohammadtoficmohammad.springrest.Models.Entity.Car;
 
 @SpringBootTest
 public class CarControllerTests {
 
 	@InjectMocks
-    CarController carController;
+    CarsController carsController;
      
     @Mock
     ICarService carService;
@@ -39,18 +40,23 @@ public class CarControllerTests {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
          
         when(carService.saveCar(any(Car.class))).//thenReturn(new Car());
-        thenAnswer(new Answer<Car>() {
+        thenAnswer(new Answer<CarDto>() {
             @Override
-            public Car answer(InvocationOnMock invocation) throws Throwable {
+            public CarDto answer(InvocationOnMock invocation) throws Throwable {
               Object[] args = invocation.getArguments();
-              return (Car) args[0];
+              var car=(Car) args[0];
+              var carDto=CarDto.build(car);
+              carDto.success=true;
+              carDto.message="good";
+              return carDto;
+              
             }
           });
         
        
          
-        Car car = new Car(1, CarModel.BMW ,"BLACK",null);
-        ResponseEntity<Car> responseEntity = carController.saveCar(car);
+        var carDto = new CarDto(1, CarModel.BMW ,"BLACK");
+        ResponseEntity<CarDto> responseEntity = carsController.saveCar(carDto);
          
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody().getModel()).isEqualTo(CarModel.BMW);
