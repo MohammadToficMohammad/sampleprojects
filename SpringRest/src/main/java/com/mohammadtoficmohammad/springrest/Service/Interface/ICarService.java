@@ -9,7 +9,7 @@ import com.mohammadtoficmohammad.springrest.Models.Entity.Car;
 
 public interface ICarService {
 	
-	public CarDto saveCar(Car car) ;
+	public CarDto saveCar(CarDto carDto) ;
 	public CarDto getCarById(long carId) ;
 	public CarListDto getAllCars() ;
 	

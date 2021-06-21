@@ -7,7 +7,7 @@ import com.mohammadtoficmohammad.springrest.Models.Entity.Owner;
 
 public interface IOwnerService {
 
-	public OwnerDto saveOwner(Owner owner) ;
+	public OwnerDto saveOwner(OwnerDto ownerDto) ;
 	public OwnerDto getOwnerById(long ownerId) ;
 	public OwnerDto getOwnerIncludeCarsById(long ownerId) ;
 }

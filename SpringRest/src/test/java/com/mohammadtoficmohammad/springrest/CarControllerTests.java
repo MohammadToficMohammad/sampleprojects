@@ -39,13 +39,12 @@ public class CarControllerTests {
         MockHttpServletRequest request = new MockHttpServletRequest();
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
          
-        when(carService.saveCar(any(Car.class))).//thenReturn(new Car());
+        when(carService.saveCar(any(CarDto.class))).//thenReturn(new Car());
         thenAnswer(new Answer<CarDto>() {
             @Override
             public CarDto answer(InvocationOnMock invocation) throws Throwable {
               Object[] args = invocation.getArguments();
-              var car=(Car) args[0];
-              var carDto=CarDto.build(car);
+              var carDto=(CarDto) args[0];
               carDto.success=true;
               carDto.message="good";
               return carDto;

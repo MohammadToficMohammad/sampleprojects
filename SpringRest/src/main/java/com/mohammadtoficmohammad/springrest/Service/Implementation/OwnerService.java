@@ -29,17 +29,17 @@ public class OwnerService implements IOwnerService{
 	private EntityManager entityManager;
 
 	@Override
-	public OwnerDto saveOwner(Owner owner) {
+	public OwnerDto saveOwner(OwnerDto ownerDto) {
 		var result = new OwnerDto();
-		if (owner == null) {
+		if (ownerDto == null) {
 			result.success = false;
-			result.message = "Null car not accepted";
+			result.message = "Null owner not accepted";
 			return result;
 		}
 		
 		try {
 
-			var ownerResult=ownerRepository.save(owner);
+			var ownerResult=ownerRepository.save(ownerDto.buildNewOwner());
 			result=OwnerDto.build(ownerResult);
 			result.success = true;
 			result.message = "car saved";

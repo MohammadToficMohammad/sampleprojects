@@ -29,8 +29,12 @@ public class OwnerDto {
 		var owner=new Owner();
 		owner.setFirstName(firstName);
 		owner.setLastName(lastName);
-		owner.cars=carListDto.carDtos.stream().map(cd->cd.buildNewCar()).collect(Collectors.toList());
-		System.out.println("asdasda "+ owner.cars.size());
+
+	    carListDto.carDtos.stream().map(cd->cd.buildNewCar()).collect(Collectors.toList()).forEach(c->{
+	    	c.setOwner(owner);
+	    	owner.cars.add(c);
+	    });
+	    
 		return owner;
 	}
 	

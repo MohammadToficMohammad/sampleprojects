@@ -30,7 +30,7 @@ public class CarsController {
 	public ResponseEntity<CarDto> saveCar(@RequestBody CarDto carDto) 
 	{
 		log.info("new car request...");
-		var result=carService.saveCar(carDto.buildNewCar());
+		var result=carService.saveCar(carDto);
 		return result.success? ResponseEntity.ok(result): new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 	}
 	

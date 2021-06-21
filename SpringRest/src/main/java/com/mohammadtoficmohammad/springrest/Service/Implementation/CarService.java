@@ -20,10 +20,10 @@ public class CarService implements ICarService {
 	CarRepository carRepository;
 
 	@Override
-	public CarDto saveCar(Car car) {
+	public CarDto saveCar(CarDto carDto) {
 
 		var result = new CarDto();
-		if (car == null) {
+		if (carDto == null) {
 			result.success = false;
 			result.message = "Null car not accepted";
 			return result;
@@ -31,7 +31,7 @@ public class CarService implements ICarService {
 		
 		try {
 
-			var carResult=carRepository.save(car);
+			var carResult=carRepository.save(carDto.buildNewCar());
 			result=CarDto.build(carResult);
 			result.success = true;
 			result.message = "car saved";

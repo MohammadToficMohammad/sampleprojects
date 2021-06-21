@@ -55,7 +55,7 @@ public class Initializer implements ApplicationRunner {
 		owner.cars.add(car1);
 		owner.cars.add(car2);
 		//cascade all will persist the cars
-		var result=ownerService.saveOwner(owner);
+		var result=ownerService.saveOwner(OwnerDto.build(owner));
 
 		
 		
