@@ -26,13 +26,13 @@ public class Owner {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long OwnerId;
+	private long ownerId;
 
 	@Column
-	private String FirstName;
+	private String firstName;
 	
 	@Column
-	private String LastName;
+	private String lastName;
 
 	@OneToMany(mappedBy = "owner",cascade =CascadeType.ALL,fetch = FetchType.LAZY)
 	public List<Car> cars = new ArrayList<>(); //lombok has bug with hashset
