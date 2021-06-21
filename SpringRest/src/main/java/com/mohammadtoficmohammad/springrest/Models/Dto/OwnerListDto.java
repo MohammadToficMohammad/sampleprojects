@@ -20,11 +20,11 @@ public class OwnerListDto {
 	
 	public List<OwnerDto> ownerDtos=new ArrayList<>();
 	
-	public static OwnerListDto build(List<Owner> ownerSet) 
+	public static OwnerListDto build(List<Owner> ownerList) 
 	{
 		var ownerListDto=new OwnerListDto();
-		if(ownerSet!=null)
-		  ownerListDto.ownerDtos=(ownerSet.stream().map(c->OwnerDto.build(c)).collect(Collectors.toList()));
+		if(ownerList!=null)
+		  ownerListDto.ownerDtos=(ownerList.stream().map(c->OwnerDto.build(c)).collect(Collectors.toList()));
 		return ownerListDto;
 	}
 	

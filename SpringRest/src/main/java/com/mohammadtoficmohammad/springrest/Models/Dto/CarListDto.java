@@ -19,11 +19,11 @@ public class CarListDto {
 	
 	public List<CarDto> carDtos=new ArrayList<>();
 	
-	public static CarListDto build(List<Car> carSet) 
+	public static CarListDto build(List<Car> carList) 
 	{
 		var carListDto=new CarListDto();
-		if(carSet!=null)
-		  carListDto.carDtos=(carSet.stream().map(c->CarDto.build(c)).collect(Collectors.toList()));
+		if(carList!=null)
+		  carListDto.carDtos=(carList.stream().map(c->CarDto.build(c)).collect(Collectors.toList()));
 		return carListDto;
 	}
 	
