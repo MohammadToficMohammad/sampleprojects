@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
+//https://www.baeldung.com/spring-boot-jsoncomponent
+
 public class CarColorJsonSerializer extends JsonSerializer<String> {
 
 
