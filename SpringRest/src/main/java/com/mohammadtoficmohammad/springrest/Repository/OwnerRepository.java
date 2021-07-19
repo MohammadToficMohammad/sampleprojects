@@ -14,6 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface OwnerRepository extends JpaRepository<Owner, Long> {
 
 	@Transactional(propagation = Propagation.SUPPORTS)
-	@Query("SELECT o FROM Owner o JOIN FETCH o.cars WHERE o.id = (:id)")
+	@Query("SELECT o FROM Owner o LEFT JOIN FETCH o.cars WHERE o.id = (:id)")
 	public Owner findByIdAndFetchCarsEagerly(@Param("id") Long id);
 }
